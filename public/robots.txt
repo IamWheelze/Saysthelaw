@@ -1,0 +1,14 @@
+# Saysthelaw Robots.txt
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://saysthelaw.com/sitemap.xml
+
+# Disallow admin and api routes (when implemented)
+Disallow: /api/
+Disallow: /admin/
+
+# Crawl delay
+Crawl-delay: 1
