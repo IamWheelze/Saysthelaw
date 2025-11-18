@@ -5,6 +5,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  trailingSlash: true,
+  skipTrailingSlashRedirect: true,
   // GitHub Pages uses repo name as base path
   // basePath: '/Saysthelaw', // Uncomment if deploying to username.github.io/Saysthelaw
   // assetPrefix: '/Saysthelaw/', // Uncomment if deploying to username.github.io/Saysthelaw

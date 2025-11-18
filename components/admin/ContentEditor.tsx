@@ -1,15 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import { Article } from '@/types';
+import { saveArticle } from '@/lib/services/dataService';
 
 export default function ContentEditor() {
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
-  const [category, setCategory] = useState('Human Rights');
+  const [category, setCategory] = useState<any>('Human Rights');
   const [content, setContent] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [tags, setTags] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [author, setAuthor] = useState('Saysthelaw Team');
+  const [countries, setCountries] = useState('');
+  const [featured, setFeatured] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const categories = [
@@ -35,29 +40,40 @@ export default function ContentEditor() {
   };
 
   const handleSave = () => {
+    if (!title.trim() || !content.trim()) {
+      alert('Please fill in title and content');
+      return;
+    }
+
     setSaving(true);
 
-    const article = {
+    const article: Article = {
       id: Date.now().toString(),
-      title,
-      slug,
-      category,
-      content,
-      excerpt,
-      tags: tags.split(',').map(tag => tag.trim()),
-      imageUrl,
-      createdAt: new Date().toISOString(),
-      published: true,
+      title: title.trim(),
+      slug: slug.trim(),
+      description: excerpt.trim() || title.substring(0, 155),
+      content: content.trim(),
+      author: author.trim() || 'Saysthelaw Team',
+      publishedDate: new Date().toISOString(),
+      category: category,
+      tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
+      countries: countries.split(',').map(c => c.trim().toUpperCase()).filter(Boolean),
+      featured: featured,
+      readTime: Math.max(1, Math.ceil(content.trim().split(/\s+/).length / 200)),
+      seo: {
+        title: title.trim() + ' | Saysthelaw',
+        description: excerpt.trim() || title.substring(0, 155),
+        keywords: tags.split(',').map(tag => tag.trim()).filter(Boolean),
+        ogImage: imageUrl.trim(),
+      },
     };
 
-    // Save to localStorage (in production, this would be an API call)
-    const articles = JSON.parse(localStorage.getItem('articles') || '[]');
-    articles.push(article);
-    localStorage.setItem('articles', JSON.stringify(articles));
+    // Save using data service
+    saveArticle(article);
 
     setTimeout(() => {
       setSaving(false);
-      alert('Article saved successfully!');
+      alert('Article published successfully! View it at /articles/' + slug);
       // Reset form
       setTitle('');
       setSlug('');
@@ -150,6 +166,34 @@ export default function ContentEditor() {
           </select>
         </div>
 
+        {/* Author and Countries */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Author
+            </label>
+            <input
+              type="text"
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              placeholder="Saysthelaw Team"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Countries (comma-separated codes: KE,NG,ZA)
+            </label>
+            <input
+              type="text"
+              value={countries}
+              onChange={(e) => setCountries(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              placeholder="KE, NG, GH"
+            />
+          </div>
+        </div>
+
         {/* Excerpt */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -176,6 +220,20 @@ export default function ContentEditor() {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
             placeholder="https://example.com/image.jpg"
           />
+        </div>
+
+        {/* Featured Checkbox */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="featured"
+            checked={featured}
+            onChange={(e) => setFeatured(e.target.checked)}
+            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+          />
+          <label htmlFor="featured" className="ml-2 text-sm font-medium text-gray-700">
+            Mark as featured article (will appear on homepage)
+          </label>
         </div>
 
         {/* Markdown Toolbar */}
